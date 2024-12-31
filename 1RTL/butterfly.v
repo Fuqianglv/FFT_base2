@@ -24,12 +24,12 @@ module butterfly #(parameter DATA_WIDTH = 8,
                    output reg [2 * DATA_WIDTH-1:0] out_b = 0,
                    output reg [CMD_WIDTH-1:0] m_out = 0);     //sync output address
     //define input re/im and twiddle re/im
-    wire signed [DATA_WIDTH- 1:0]in_a_re = 0;
-    wire signed [DATA_WIDTH- 1:0]in_a_im = 0;
-    wire signed [DATA_WIDTH- 1:0]in_b_re = 0;
-    wire signed [DATA_WIDTH- 1:0]in_b_im = 0;
-    wire signed [DATA_WIDTH- 1:0]w_re    = 0;
-    wire signed [DATA_WIDTH- 1:0]w_im    = 0;
+    wire signed [DATA_WIDTH- 1:0]in_a_re;
+    wire signed [DATA_WIDTH- 1:0]in_a_im;
+    wire signed [DATA_WIDTH- 1:0]in_b_re;
+    wire signed [DATA_WIDTH- 1:0]in_b_im;
+    wire signed [DATA_WIDTH- 1:0]w_re   ;
+    wire signed [DATA_WIDTH- 1:0]w_im   ;
     //assign input re/im and twiddle factor re/im
     assign in_a_re = in_a[DATA_WIDTH-1:0];
     assign in_a_im = in_a[2*DATA_WIDTH-1:DATA_WIDTH];
@@ -43,17 +43,17 @@ module butterfly #(parameter DATA_WIDTH = 8,
     //*******************************************************
     reg signed [DATA_WIDTH-1:0] w_in_b_re  = 0;
     reg signed [DATA_WIDTH-1:0] w_in_b_im  = 0;
-    reg signed [DATA_WIDTH-1:0] w_in_b_re1 = 0;
-    reg signed [DATA_WIDTH-1:0] w_in_b_im1 = 0;
-    reg signed [DATA_WIDTH-1:0] w_in_b_re2 = 0;
-    reg signed [DATA_WIDTH-1:0] w_in_b_im2 = 0;
+    reg signed [2*DATA_WIDTH-1:0] w_in_b_re1 = 0;
+    reg signed [2*DATA_WIDTH-1:0] w_in_b_im1 = 0;
+    reg signed [2*DATA_WIDTH-1:0] w_in_b_re2 = 0;
+    reg signed [2*DATA_WIDTH-1:0] w_in_b_im2 = 0;
     
     always@(posedge clk)
     begin
-        w_in_b_re1 <= w_re * in_b_re >>> (DATA_WIDTH - 2);
-        w_in_b_im1 <= w_re * in_b_im >>> (DATA_WIDTH - 2);
-        w_in_b_re2 <= w_im * in_b_im >>> (DATA_WIDTH - 2); //-w_im * in_b_im;
-        w_in_b_im2 <= w_im * in_b_re >>> (DATA_WIDTH - 2);//w_im * in_b_re;
+        w_in_b_re1 <= (w_re * in_b_re) >>> (DATA_WIDTH - 2);
+        w_in_b_im1 <= (w_re * in_b_im) >>> (DATA_WIDTH - 2);
+        w_in_b_re2 <= (w_im * in_b_im) >>> (DATA_WIDTH - 2); //-w_im * in_b_im;
+        w_in_b_im2 <= (w_im * in_b_re) >>> (DATA_WIDTH - 2); //w_im * in_b_re;
         
         w_in_b_re <= w_in_b_re1 - w_in_b_re2;
         w_in_b_im <= w_in_b_im1 + w_in_b_im2;
@@ -75,12 +75,10 @@ module butterfly #(parameter DATA_WIDTH = 8,
     //*******************************************************
     reg [CMD_WIDTH-1:0] m_in_1 = 0;
     reg [CMD_WIDTH-1:0] m_in_2 = 0;
-    reg [CMD_WIDTH-1:0] m_in_3 = 0;
     always@(posedge clk)
     begin
         m_in_1 <= m_in;
         m_in_2 <= m_in_1;
-        m_in_3 <= m_in_2;
-        m_out <= m_in_3;
+        m_out <= m_in_2;
     end
 endmodule
