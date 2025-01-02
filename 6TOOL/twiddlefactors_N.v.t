@@ -2,8 +2,8 @@
 // This file is the output of the twiddlefactors template
 
 module twiddlefactors (
-    input  wire                            clk,
-    input  wire [{{Nlog2 - 2}}:0]          addr,
+    input  wire clk,
+    input  wire [{{Nlog2 - 2}}:0] addr,
     output reg signed [{{2*tf_width-1}}:0] tf_out
   );
 

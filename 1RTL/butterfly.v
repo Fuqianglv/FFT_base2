@@ -18,11 +18,11 @@ module butterfly #(parameter DATA_WIDTH = 8,
                   (input wire clk,
                    input wire [2 * DATA_WIDTH-1:0] in_a,
                    input wire [2 * DATA_WIDTH-1:0] in_b,
-                   input wire [CMD_WIDTH-1:0] m_in,           //sync output address
-                   input wire [2 * DATA_WIDTH-1:0] w,         //twiddle factor
+                   input wire [2 * CMD_WIDTH-1:0] m_in,           //sync output address
+                   input wire [2 * DATA_WIDTH-1:0] w,             //twiddle factor
                    output reg [2 * DATA_WIDTH-1:0] out_a = 0,
                    output reg [2 * DATA_WIDTH-1:0] out_b = 0,
-                   output reg [CMD_WIDTH-1:0] m_out = 0);     //sync output address
+                   output reg [2 * CMD_WIDTH-1:0] m_out = 0);     //sync output address
     //define input re/im and twiddle re/im
     wire signed [DATA_WIDTH- 1:0]in_a_re;
     wire signed [DATA_WIDTH- 1:0]in_a_im;
@@ -73,8 +73,8 @@ module butterfly #(parameter DATA_WIDTH = 8,
     //*******************************************************
     //output the sync address
     //*******************************************************
-    reg [CMD_WIDTH-1:0] m_in_1 = 0;
-    reg [CMD_WIDTH-1:0] m_in_2 = 0;
+    reg [2 * CMD_WIDTH-1:0] m_in_1 = 0;
+    reg [2 * CMD_WIDTH-1:0] m_in_2 = 0;
     always@(posedge clk)
     begin
         m_in_1 <= m_in;

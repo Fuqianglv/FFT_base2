@@ -32,7 +32,7 @@ def make_twiddle_factor_file(N, tf_width, template_fn, output_fn):
     
 
 if __name__ == '__main__':
-    tf_width = 32
+    tf_width = 8
     N = 128
     
     output_fn = 'twiddlefactors_{0}.v'.format(N)
