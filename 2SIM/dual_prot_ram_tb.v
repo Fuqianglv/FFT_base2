@@ -11,10 +11,10 @@ module dual_prot_ram_tb();
     reg [DATA_WIDTH-1:0]DIA, DIB;
     wire [DATA_WIDTH-1:0] DOA, DOB;
     
-    BRAM_TDP_MACRO #(
+    dual_prot_ram #(
     .DATA_WIDTH(DATA_WIDTH),
     .CMD_WIDTH(CMD_WIDTH)
-    )u_BRAM_TDP_MACRO(
+    )u_dual_prot_ram(
     .CLKA  (CLKA),
     .CLKB  (CLKB),
     .ENA   (ENA),
