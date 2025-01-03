@@ -3,13 +3,13 @@
 
 module dual_prot_ram_tb();
     
-    parameter DATA_WIDTH = 16;
-    parameter CMD_WIDTH  = 4;
+    parameter DATA_WIDTH = 8;
+    parameter CMD_WIDTH  = 10;
     
     reg CLKA, CLKB, ENA, ENB, WEA, WEB;
     reg [CMD_WIDTH-1:0] ADDRA, ADDRB;
-    reg [DATA_WIDTH-1:0]DIA, DIB;
-    wire [DATA_WIDTH-1:0] DOA, DOB;
+    reg [2*DATA_WIDTH-1:0]DIA, DIB;
+    wire [2*DATA_WIDTH-1:0] DOA, DOB;
     
     dual_prot_ram #(
     .DATA_WIDTH(DATA_WIDTH),
@@ -52,10 +52,11 @@ module dual_prot_ram_tb();
         // Toggle clock
         forever #5 CLKB = ~CLKB;
     end
-
+    
     //用for循环写入数据到BRAM
     integer i; // Declare loop variable outside the for loop
     initial begin
+        #105.5;
         // Initialize signals
         ENA   = 0;          // Enable signal for BRAM
         WEA   = 0;          // Write enable signal for BRAM
@@ -64,17 +65,14 @@ module dual_prot_ram_tb();
         
         // Write data to BRAM using for loop
         for (i = 0; i < 16; i = i + 1) begin
-            begin
-                #10;                  // Wait 10 time units
-                ENA   = 1;              // Enable BRAM for writing
-                WEA   = 1;              // Enable write operation
-                ADDRA = i;            // Set address to i
-                DIA   = i;   // Set data to some value (e.g., 10 times the address)
-                
-                // Add more logic here if needed (e.g., waiting for writing to finish)
-            end
+            #10;                  // Wait 10 time units
+            ENA   = 1;              // Enable BRAM for writing
+            WEA   = 1;              // Enable write operation
+            ADDRA = i;            // Set address to i
+            DIA   = i;   // Set data to some value (e.g., 10 times the address)
+            
+            // Add more logic here if needed (e.g., waiting for writing to finish)
         end
-        
         // After writing, disable the write enable signal
         ENA = 0;
         WEA = 0;
@@ -82,26 +80,49 @@ module dual_prot_ram_tb();
     
     //用for循环读取数据到BRAM
     initial begin
+        #405.1;
         // Initialize signals
         ENB   = 0;          // Enable signal for BRAM
         WEB   = 0;          // Write enable signal for BRAM
         ADDRB = 4'b0000;    // Address for BRAM (starting address)
         
         // Read data from BRAM using for loop
-        for (i = 0; i < 16; i = i + 1) begin
-            begin
-                #10;                  // Wait 10 time units
-                ENB   = 1;              // Enable BRAM for reading
-                WEB   = 0;              // Disable write operation
-                ADDRB = i;            // Set address to i
-                
-                // Add more logic here if needed (e.g., waiting for reading to finish)
-            end
+        for (i = 0; i < 16; i = i + 1)
+        begin
+            #10;                  // Wait 10 time units
+            ENB   = 1;              // Enable BRAM for reading
+            WEB   = 0;              // Disable write operation
+            ADDRB = i;            // Set address to i
+            
+            // Add more logic here if needed (e.g., waiting for reading to finish)
         end
-        
         // After reading, disable the write enable signal
         ENB = 0;
         WEB = 0;
     end
     
+    //用for循环读取数据到BRAM
+    initial begin
+        #805.1;
+        // Initialize signals
+        ENB   = 0;          // Enable signal for BRAM
+        WEB   = 0;          // Write enable signal for BRAM
+        ADDRB = 4'b0000;    // Address for BRAM (starting address)
+        
+        // Read data from BRAM using for loop
+        for (i = 0; i < 32; i = i + 1) begin
+            begin
+            #10;                  // Wait 10 time units
+            ENB   = 1;              // Enable BRAM for reading
+            WEB   = 0;              // Disable write operation
+            ADDRB = i;            // Set address to i
+            
+            // Add more logic here if needed (e.g., waiting for reading to finish)
+        end
+    end
+    
+    // After reading, disable the write enable signal
+    ENB = 0;
+    WEB = 0;
+    end
 endmodule
