@@ -13,9 +13,9 @@ module FFT_BASE2#(parameter CLK_FREQ = 100_000_000,
                   input wire [DATA_WIDTH-1:0] i_in,
                   input wire [DATA_WIDTH-1:0] q_in);
     
-    
-    localparam RATE      = CLK_FREQ>>($clog2(RES)+$clog2(N));
-    localparam CMD_WIDTH = $clog2(N);
+    localparam BRAM_WIDTH = 10;
+    localparam RATE       = CLK_FREQ>>($clog2(RES)+$clog2(N));
+    localparam CMD_WIDTH  = $clog2(N);
     
     //define butterfly module input/output
     wire [2 * DATA_WIDTH-1:0] in_a;
@@ -33,6 +33,17 @@ module FFT_BASE2#(parameter CLK_FREQ = 100_000_000,
     //define the downsample counter
     reg [32-1:0] downsample_counter = 0;
     reg flag_downsample             = 0;
+    
+    //define the bram module input/output
+    reg ENA0, ENB0, WEA0, WEB0;
+    reg ENA1, ENB1, WEA1, WEB1;
+    reg [BRAM_WIDTH-1:0] ADDRA0, ADDRB0;
+    reg [BRAM_WIDTH-1:0] ADDRA1, ADDRB1;
+    reg [2*DATA_WIDTH-1:0] DIA0, DIB0;
+    reg [2*DATA_WIDTH-1:0] DIA1, DIB1;
+    wire [2*DATA_WIDTH-1:0] DOA0, DOB0;
+    wire [2*DATA_WIDTH-1:0] DOA1, DOB1;
+    
     
     //*******************************************************
     //state machine
@@ -126,6 +137,41 @@ module FFT_BASE2#(parameter CLK_FREQ = 100_000_000,
     .out_b (out_b),
     .m_out (m_out)
     );
+    
+    //*******************************************************
+    //bram module
+    //*******************************************************
+    
+    dual_prot_ram u0_dual_prot_ram(
+    .CLKA  (clk),
+    .CLKB  (clk),
+    .ENA   (ENA0),
+    .ENB   (ENB0),
+    .WEA   (WEA0),
+    .WEB   (WEB0),
+    .ADDRA (ADDRA0),
+    .ADDRB (ADDRB0),
+    .DIA   (DIA0),
+    .DIB   (DIB0),
+    .DOA   (DOA0),
+    .DOB   (DOB0)
+    );
+    
+    dual_prot_ram u1_dual_prot_ram(
+    .CLKA  (clk),
+    .CLKB  (clk),
+    .ENA   (ENA1),
+    .ENB   (ENB1),
+    .WEA   (WEA1),
+    .WEB   (WEB1),
+    .ADDRA (ADDRA1),
+    .ADDRB (ADDRB1),
+    .DIA   (DIA1),
+    .DIB   (DIB1),
+    .DOA   (DOA1),
+    .DOB   (DOB1)
+    );
+    
     
     
 endmodule

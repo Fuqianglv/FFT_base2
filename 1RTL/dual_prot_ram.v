@@ -30,15 +30,15 @@
 //////////////////////////////////////////////////////////////////////////
 `timescale 1ns / 1ps
 module dual_prot_ram #(parameter DATA_WIDTH = 8,
-                        parameter CMD_WIDTH = 3)
+                        parameter BRAM_WIDTH = 10)
                        (input wire CLKA,                     // Port A clock
                         input wire CLKB,                     // Port B clock
                         input wire ENA,                      // Port A enable
                         input wire ENB,                      // Port B enable
                         input wire WEA,                      // Port A write enable
                         input wire WEB,                      // Port B write enable
-                        input wire [CMD_WIDTH-1:0] ADDRA,    // Port A address
-                        input wire [CMD_WIDTH-1:0] ADDRB,    // Port B address
+                        input wire [BRAM_WIDTH-1:0] ADDRA,    // Port A address
+                        input wire [BRAM_WIDTH-1:0] ADDRB,    // Port B address
                         input wire [2*DATA_WIDTH-1:0] DIA,   // Port A input data
                         input wire [2*DATA_WIDTH-1:0] DIB,   // Port B input data
                         output wire [2*DATA_WIDTH-1:0] DOA,  // Port A output data

@@ -4,16 +4,16 @@
 module dual_prot_ram_tb();
     
     parameter DATA_WIDTH = 8;
-    parameter CMD_WIDTH  = 10;
+    parameter BRAM_WIDTH  = 10;
     
     reg CLKA, CLKB, ENA, ENB, WEA, WEB;
-    reg [CMD_WIDTH-1:0] ADDRA, ADDRB;
+    reg [BRAM_WIDTH-1:0] ADDRA, ADDRB;
     reg [2*DATA_WIDTH-1:0]DIA, DIB;
     wire [2*DATA_WIDTH-1:0] DOA, DOB;
     
     dual_prot_ram #(
     .DATA_WIDTH(DATA_WIDTH),
-    .CMD_WIDTH(CMD_WIDTH)
+    .BRAM_WIDTH(BRAM_WIDTH)
     )u_dual_prot_ram(
     .CLKA  (CLKA),
     .CLKB  (CLKB),
