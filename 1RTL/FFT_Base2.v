@@ -17,8 +17,8 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
     localparam ADDR_WIDTH = $clog2(N);
     
     //define butterfly module input/output
-    wire [2 * DATA_WIDTH-1:0] in_a;
-    wire [2 * DATA_WIDTH-1:0] in_b;
+    reg [2 * DATA_WIDTH-1:0] in_a;
+    reg [2 * DATA_WIDTH-1:0] in_b;
     wire [2 * DATA_WIDTH-1:0] w;
     wire [2 * DATA_WIDTH-1:0] out_a;
     wire [2 * DATA_WIDTH-1:0] out_b;
@@ -65,6 +65,10 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
     wire [ADDR_WIDTH-1:0] in_b_addr;
     reg [ADDR_WIDTH-1:0] out_a_addr = 0;
     wire [ADDR_WIDTH-1:0] out_b_addr;
+    wire [ADDR_WIDTH-1:0] out_a_addr_reg;
+    wire [ADDR_WIDTH-1:0] out_b_addr_reg;
+    reg fft_done = 0;
+    reg [2*DATA_WIDTH-1:0] out_fft_data;
     
     //*******************************************************
     //state machine
@@ -89,10 +93,20 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
                 end
             end
             FFT_OPERATION:begin
-                //next_state = FFT_RESULT_OUT;
+                if (S == 1'b1&&out_b_addr == N-1)begin
+                    next_state = FFT_RESULT_OUT;
+                end
+                else begin
+                    next_state = FFT_OPERATION;
+                end
             end
             FFT_RESULT_OUT:begin
-                next_state = IDLE;
+                if (out_b_addr == N-1)begin
+                    next_state = IDLE;
+                end
+                else begin
+                    next_state = FFT_RESULT_OUT;
+                end
             end
             default:begin
                 next_state = IDLE;
@@ -103,22 +117,28 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
     always@(posedge clk)begin
         case(next_state)
             IDLE:begin
-                ENA0   <= 0;
-                ENB0   <= 0;
-                WEA0   <= 0;
-                WEB0   <= 0;
-                ENA1   <= 0;
-                ENB1   <= 0;
-                WEA1   <= 0;
-                WEB1   <= 0;
-                ADDRA0 <= 0;
-                ADDRB0 <= 0;
-                ADDRA1 <= 0;
-                ADDRB1 <= 0;
-                DIA0   <= 0;
-                DIB0   <= 0;
-                DIA1   <= 0;
-                DIB1   <= 0;
+                ENA0              <= 0;
+                ENB0              <= 0;
+                WEA0              <= 0;
+                WEB0              <= 0;
+                ENA1              <= 0;
+                ENB1              <= 0;
+                WEA1              <= 0;
+                WEB1              <= 0;
+                ADDRA0            <= 0;
+                ADDRB0            <= 0;
+                ADDRA1            <= 0;
+                ADDRB1            <= 0;
+                DIA0              <= 0;
+                DIB0              <= 0;
+                DIA1              <= 0;
+                DIB1              <= 0;
+                data_padding_flag <= 0;
+                select_bramid     <= 0;
+                out_a_addr        <= 0;
+                S                 <= 0;
+                select_ks_j       <= 0;
+                fft_done          <= 0;
             end
             FFT_DATA_PADDING:begin
                 ENA0   <= flag_downsample;
@@ -130,7 +150,7 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
                     select_ks_j       <= {ADDR_WIDTH{1'b1}} >> 1;
                     S                 <= {1'b1,{ADDR_WIDTH-1{1'b0}}};
                     select_bramid     <= 0;
-                    out_addr          <= 0;
+                    out_a_addr        <= 0;
                 end
                 else begin
                     data_padding_flag <= 0;
@@ -148,28 +168,50 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
                 if (select_bramid)begin
                     ADDRA0 <= in_a_addr;//in_a
                     ADDRB0 <= in_b_addr;//in_b
-                    ADDRA1 <= out_a_addr;//out_a
-                    ADDRB1 <= out_b_addr;//out_b
-                    DIA0   <= 0;
-                    DIB0   <= 0;
-                    DIA1   <= 0;
-                    DIB1   <= 0;
+                    ADDRA1 <= out_a_addr_reg;//out_a
+                    ADDRB1 <= out_b_addr_reg;//out_b
+                    in_a   <= DOA0;
+                    in_b   <= DOB0;
+                    DIA1   <= out_a;
+                    DIB1   <= out_b;
                 end
                 else begin
-                    ADDRA0 <= out_a_addr;//out_a
-                    ADDRB0 <= out_b_addr;//out_b
+                    ADDRA0 <= out_a_addr_reg;//out_a
+                    ADDRB0 <= out_b_addr_reg;//out_b
                     ADDRA1 <= in_a_addr;//in_a
                     ADDRB1 <= in_b_addr;//in_b
-                    DIA0   <= 0;
-                    DIB0   <= 0;
-                    DIA1   <= 0;
-                    DIB1   <= 0;
+                    in_a   <= DOA1;
+                    in_b   <= DOB1;
+                    DIA0   <= out_a;
+                    DIB0   <= out_b;
                 end
-                
-                
+                if (out_b_addr == N-1)begin
+                    select_bramid <= ~select_bramid;
+                    select_ks_j   <= select_ks_j >> 1;
+                    S             <= S >> 1;
+                    out_a_addr    <= 0;
+                    ADDRA0        <= 0;
+                    ADDRB0        <= 0;
+                    ADDRA1        <= 0;
+                    ADDRB1        <= 0;
+                end
+                else begin
+                    out_a_addr <= out_a_addr + 1;
+                end
             end
             FFT_RESULT_OUT:begin
-                //do nothing
+                WEA0     <= 0;
+                WEB0     <= 0;
+                WEA1     <= 0;
+                WEB1     <= 0;
+                fft_done <= 1;
+                if (select_bramid)begin
+                    ADDRA0 <= ADDRA0+1;//in_a
+                end
+                else begin
+                    ADDRA1 <= ADDRA1+1;//out_a
+                end
+                out_fft_data <= DOA0;
             end
             default:begin
                 //do nothing
@@ -200,10 +242,12 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
     //*******************************************************
     //in/out address
     //*******************************************************
-    assign in_a_addr  = (out_a_addr & series_bits) | ((out_a_addr & ~series_bits)<<1);
-    assign in_b_addr  = in_a_addr+S;
-    assign out_b_addr = {1'b1, out_a_addr[ADDR_WIDTH-2:0]};
-    
+    assign in_a_addr      = (out_a_addr & select_ks_j) | ((out_a_addr & ~select_ks_j)<<1);
+    assign in_b_addr      = in_a_addr+S;
+    assign out_b_addr     = {1'b1, out_a_addr[ADDR_WIDTH-2:0]};
+    assign m_in           = {out_a_addr,out_b_addr};
+    assign out_a_addr_reg = m_out[2*ADDR_WIDTH-1:ADDR_WIDTH];
+    assign out_b_addr_reg = m_out[ADDR_WIDTH-1:0];
     //*******************************************************
     //twiddlefactors module
     //*******************************************************
