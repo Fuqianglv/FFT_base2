@@ -1,7 +1,7 @@
 // Copyright (c) 2024 LFQ
 // This file is the output of the twiddlefactors template
 
-module twiddlefactors (
+module twiddlefactors_128 (
     input  wire clk,
     input  wire [5:0] addr,
     output reg signed [15:0] tf_out
