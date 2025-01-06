@@ -26,8 +26,10 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
     wire [2 * ADDR_WIDTH-1:0] m_out;
     
     //define twiddlefactors module input/output
+    localparam TF_ADDR_WIDTH = $clog2(N/2);
     wire [ADDR_WIDTH-1:0] addr;
     wire [2 * DATA_WIDTH-1:0] tf_out;
+    wire [TF_ADDR_WIDTH-1:0] tf_addr;
     
     //define the downsample counter
     reg [32-1:0] downsample_counter = 0;
@@ -186,18 +188,19 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
                     DIA0   <= out_a;
                     DIB0   <= out_b;
                 end
-                if (out_b_addr == N-1)begin
+                if (out_b_addr_reg == N-1)begin
+                    ADDRA0        <= out_a_addr_reg;//out_a
+                    ADDRB0        <= out_b_addr_reg;//out_b
+                    DIA0          <= out_a;
+                    DIB0          <= out_b;
                     select_bramid <= ~select_bramid;
                     select_ks_j   <= select_ks_j >> 1;
                     S             <= S >> 1;
                     out_a_addr    <= 0;
-                    ADDRA0        <= 0;
-                    ADDRB0        <= 0;
-                    ADDRA1        <= 0;
-                    ADDRB1        <= 0;
                 end
-                else begin
-                    out_a_addr <= out_a_addr + 1;
+                else
+                begin
+                    out_a_addr <= out_a_addr+1;
                 end
             end
             FFT_RESULT_OUT:begin
@@ -216,7 +219,7 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
                 else begin
                     ADDRA1 <= ADDRA1+1;//out_a
                 end
-                if(ADDRA0 == N-1 || ADDRA1 == N-1)begin
+                if (ADDRA0 == N-1 || ADDRA1 == N-1)begin
                     fft_done <= 0;
                 end
                 out_fft_data <= DOA0;
@@ -256,12 +259,13 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
     assign m_in           = {out_a_addr,out_b_addr};
     assign out_a_addr_reg = m_out[2*ADDR_WIDTH-1:ADDR_WIDTH];
     assign out_b_addr_reg = m_out[ADDR_WIDTH-1:0];
+    assign tf_addr        = out_a_addr & ~select_ks_j;
     //*******************************************************
     //twiddlefactors module
     //*******************************************************
     twiddlefactors_8 u_twiddlefactors(
     .clk    (clk),
-    .addr   (addr),
+    .addr   (tf_addr),
     .tf_out (tf_out)
     );
     
@@ -276,7 +280,7 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
     .in_a  (in_a),
     .in_b  (in_b),
     .m_in  (m_in),
-    .w     (w),
+    .w     (tf_out),
     .out_a (out_a),
     .out_b (out_b),
     .m_out (m_out)
