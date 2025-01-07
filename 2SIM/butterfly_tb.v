@@ -3,12 +3,12 @@
 module TB();
     
     parameter DATA_WIDTH = 16;
-    parameter CMD_WIDTH  = 3;
+    parameter CMD_WIDTH  = 4;
     // Inputs
     reg clk                       = 1;
     reg [2 * DATA_WIDTH-1:0] in_a = 0;
     reg [2 * DATA_WIDTH-1:0] in_b = 0;
-    reg [CMD_WIDTH-1:0] m_in      = 0;
+    reg [2 * CMD_WIDTH-1:0] m_in      = 0;
     reg [2 * DATA_WIDTH-1:0] w    = 0;
     // Outputs
     wire [2 * DATA_WIDTH-1:0] out_a;
@@ -27,34 +27,34 @@ module TB();
         in_a = { 16'sd16304,  -16'sd0 };
         in_b = { 16'sd6384,  -16'sd110 };
         w    = { 16'sd16384,  -16'sd0 };
-        m_in = 3'b001;
+        m_in = 4'b001;
         #10;
         in_a = { 16'sd1634,  -16'sd110 };
         in_b = { 16'sd1384,  -16'sd0 };
         w    = { 16'sd11585,  -16'sd11585 };
-        m_in = 3'b010;
+        m_in = 4'b010;
         #10;
         in_a = { 16'sd12384,  -16'sd034 };
         in_b = { 16'sd1634,  -16'sd021 };
         w    = { 16'sd15137,  -16'sd6270 };
-        m_in = 3'b011;
+        m_in = 4'b011;
         #10;
         in_a = { 16'sd384,  -16'sd01212 };
         in_b = { 16'sd1184,  -16'sd345 };
         w    = { -16'sd6270,  -16'sd15137 };
-        m_in = 3'b100;
+        m_in = 4'b100;
         #10;
         in_a = { 16'sd1184,  -16'sd139 };
         in_b = { 16'sd184,  -16'sd16384};
         w    = { -16'sd15137,  -16'sd6270 };
-        m_in = 3'b101;
+        m_in = 4'b101;
         #100;
         $finish;
     end
 
     
 
-    wire signed [DATA_WIDTH- 1:0]in_a_re;
+    /*wire signed [DATA_WIDTH- 1:0]in_a_re;
     wire signed [DATA_WIDTH- 1:0]in_a_im;
     wire signed [DATA_WIDTH- 1:0]in_b_re;
     wire signed [DATA_WIDTH- 1:0]in_b_im;
@@ -74,7 +74,7 @@ module TB();
     assign out_a_im = out_a[DATA_WIDTH-1:0];
     assign out_a_re = out_a[2*DATA_WIDTH-1:DATA_WIDTH];
     assign out_b_im = out_b[DATA_WIDTH-1:0];
-    assign out_b_re = out_b[2*DATA_WIDTH-1:DATA_WIDTH];
+    assign out_b_re = out_b[2*DATA_WIDTH-1:DATA_WIDTH];*/
 
     
     

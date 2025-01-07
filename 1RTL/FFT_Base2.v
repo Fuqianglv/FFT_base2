@@ -85,6 +85,9 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
                 if (enable)begin
                     next_state = FFT_DATA_PADDING;
                 end
+                else begin
+                    next_state = next_state;
+                end
             end
             FFT_DATA_PADDING:begin
                 if (data_padding_flag)begin
@@ -95,7 +98,7 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
                 end
             end
             FFT_OPERATION:begin
-                if (S == 1'b1&&out_b_addr == N-1)begin
+                if (S == 1'b1&&out_b_addr_reg == N-1)begin
                     next_state = FFT_RESULT_OUT;
                 end
                 else begin
@@ -197,6 +200,10 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
                     select_ks_j   <= select_ks_j >> 1;
                     S             <= S >> 1;
                     out_a_addr    <= 0;
+                end
+                else if(out_b_addr == N-1)
+                begin
+                    out_a_addr <= 0;
                 end
                 else
                 begin

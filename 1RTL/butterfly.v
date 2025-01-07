@@ -23,20 +23,30 @@ module butterfly #(parameter DATA_WIDTH = 8,
                    output reg [2 * DATA_WIDTH-1:0] out_a = 0,
                    output reg [2 * DATA_WIDTH-1:0] out_b = 0,
                    output reg [2 * ADDR_WIDTH-1:0] m_out = 0); //sync output address
+    
+    localparam PN = 2;
     //define input re/im and twiddle re/im
-    wire signed [DATA_WIDTH- 1:0]in_a_re;
-    wire signed [DATA_WIDTH- 1:0]in_a_im;
-    wire signed [DATA_WIDTH- 1:0]in_b_re;
-    wire signed [DATA_WIDTH- 1:0]in_b_im;
-    wire signed [DATA_WIDTH- 1:0]w_re   ;
-    wire signed [DATA_WIDTH- 1:0]w_im   ;
+    reg signed [DATA_WIDTH- 1:0] in_a_re [PN-1:0];
+    reg signed [DATA_WIDTH- 1:0] in_a_im [PN-1:0];
+    wire signed [DATA_WIDTH- 1:0] in_b_re;
+    wire signed [DATA_WIDTH- 1:0] in_b_im;
+    wire signed [DATA_WIDTH- 1:0] w_re   ;
+    wire signed [DATA_WIDTH- 1:0] w_im   ;
     //assign input re/im and twiddle factor re/im
-    assign in_a_re = in_a[DATA_WIDTH-1:0];
-    assign in_a_im = in_a[2*DATA_WIDTH-1:DATA_WIDTH];
-    assign in_b_re = in_b[DATA_WIDTH-1:0];
-    assign in_b_im = in_b[2*DATA_WIDTH-1:DATA_WIDTH];
-    assign w_re    = w[DATA_WIDTH-1:0];
-    assign w_im    = w[2*DATA_WIDTH-1:DATA_WIDTH];
+    integer i;
+    always @(posedge clk) begin
+        in_a_re[0] <= in_a[2*DATA_WIDTH-1:DATA_WIDTH];
+        in_a_im[0] <= in_a[DATA_WIDTH-1:0];
+        for(i = 0;i<PN-1;i = i+1)
+        begin
+            in_a_re[i+1] <= in_a_re[i];
+            in_a_im[i+1] <= in_a_im[i];
+        end
+    end
+    assign in_b_im = in_b[DATA_WIDTH-1:0];
+    assign in_b_re = in_b[2*DATA_WIDTH-1:DATA_WIDTH];
+    assign w_im    = w[DATA_WIDTH-1:0];
+    assign w_re    = w[2*DATA_WIDTH-1:DATA_WIDTH];
     
     //*******************************************************
     //save the twiddle factor * in_b
@@ -49,10 +59,10 @@ module butterfly #(parameter DATA_WIDTH = 8,
     reg signed [2*DATA_WIDTH-1:0] w_in_b_im2 = 0;
     //w_in_b_* = w_* * in_b_* (DATA_WIDTH - 2)+(DATA_WIDTH-1) = 2*DATA_WIDTH-3(ignore the sign bit)
     //w_in_b_* >>> (DATA_WIDTH - 2)  DATA_WIDTH-1 (ignore the sign bit)
-    //w_in_b_*1 +  w_in_b_*2 <= 2 * sqrt(in_b_re * in_b_im) * sqrt(w_re * w_im) 
+    //w_in_b_*1 +  w_in_b_*2 <= 2 * sqrt(in_b_re * in_b_im) * sqrt(w_re * w_im)
     //I^2 + Q^2 = 1 re^2 + im^2 = 1
     //(ignore the sign bit)
-    //w_in_b_*1 +  w_in_b_*2 <= 2 * 1/2 * DATA_WIDTH - 1 * 1/2 
+    //w_in_b_*1 +  w_in_b_*2 <= 2 * 1/2 * DATA_WIDTH - 1 * 1/2
     // = 1 - 1  DATA_WIDTH - 1 - 1 = DATA_WIDTH - 2
     always@(posedge clk)
     begin
@@ -70,10 +80,10 @@ module butterfly #(parameter DATA_WIDTH = 8,
     //*******************************************************
     always@(posedge clk)
     begin
-        out_a[DATA_WIDTH - 1 : 0]              <= (in_a_im + w_in_b_im) >>> 1;
-        out_a[2 * DATA_WIDTH - 1 : DATA_WIDTH] <= (in_a_re + w_in_b_re) >>> 1;
-        out_b[DATA_WIDTH - 1 : 0]              <= (in_a_im - w_in_b_im) >>> 1;
-        out_b[2 * DATA_WIDTH - 1 : DATA_WIDTH] <= (in_a_re - w_in_b_re) >>> 1;
+        out_a[DATA_WIDTH - 1 : 0]              <= (in_a_im[PN-1] + w_in_b_im) >>> 1;
+        out_a[2 * DATA_WIDTH - 1 : DATA_WIDTH] <= (in_a_re[PN-1] + w_in_b_re) >>> 1;
+        out_b[DATA_WIDTH - 1 : 0]              <= (in_a_im[PN-1] - w_in_b_im) >>> 1;
+        out_b[2 * DATA_WIDTH - 1 : DATA_WIDTH] <= (in_a_re[PN-1] - w_in_b_re) >>> 1;
     end
     
     //*******************************************************
@@ -81,10 +91,16 @@ module butterfly #(parameter DATA_WIDTH = 8,
     //*******************************************************
     reg [2 * ADDR_WIDTH-1:0] m_in_1 = 0;
     reg [2 * ADDR_WIDTH-1:0] m_in_2 = 0;
+    reg [2 * ADDR_WIDTH-1:0] m_in_3 = 0;
+    reg [2 * ADDR_WIDTH-1:0] m_in_4 = 0;
+    reg [2 * ADDR_WIDTH-1:0] m_in_5 = 0;
     always@(posedge clk)
     begin
         m_in_1 <= m_in;
         m_in_2 <= m_in_1;
-        m_out  <= m_in_2;
+        m_in_3 <= m_in_2;
+        m_in_4 <= m_in_3;
+        m_in_5 <= m_in_4;
+        m_out <= m_in_5;
     end
 endmodule
