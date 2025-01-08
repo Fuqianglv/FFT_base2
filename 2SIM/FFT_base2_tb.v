@@ -11,6 +11,10 @@ module FFT_Base2_tb();
     reg [DATA_WIDTH-1:0] q_in = 0;
     reg [15:0] temp_array [0:999];
     
+    // Outputs
+    wire out_fft_data_flag;
+    wire [2*DATA_WIDTH-1:0] out_fft_data;
+    
     integer i;
     initial begin
         $readmemb("E:/LFQ/FFT/6TOOL/data_before_fft.txt", temp_array);
@@ -25,6 +29,10 @@ module FFT_Base2_tb();
     
     always #5 clk = ~clk;
     
+    wire [DATA_WIDTH-1:0] out_re;
+    wire [DATA_WIDTH-1:0] out_im;
+    assign out_re = out_fft_data[2*DATA_WIDTH-1:DATA_WIDTH];
+    assign out_im = out_fft_data[DATA_WIDTH-1:0];
     
     FFT_Base2#(
     .CLK_FREQ(100_000_000),
@@ -32,10 +40,12 @@ module FFT_Base2_tb();
     .N(8),
     .DATA_WIDTH(8)
     )u_FFT_Base2(
-    .clk    (clk),
-    .enable (enable),
-    .i_in   (i_in),
-    .q_in   (q_in)
+    .clk               (clk),
+    .enable            (enable),
+    .i_in              (i_in),
+    .q_in              (q_in),
+    .out_fft_data_flag (out_fft_data_flag),
+    .out_fft_data      (out_fft_data)
     );
     
 endmodule

@@ -18,6 +18,8 @@ s_q = np.sin(2 * np.pi * f2 * t)
 data_before_fft_I = pow(2,6) * s_i  # I路放大100倍
 data_before_fft_Q = pow(2,6) * s_q  # Q路放大100倍
 
+
+
 # 保存为16位有符号二进制文件
 with open(r'.\data_before_fft.txt', 'w') as fp:
     for i_val, q_val in zip(data_before_fft_I, data_before_fft_Q):
