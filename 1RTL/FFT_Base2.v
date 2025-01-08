@@ -228,10 +228,11 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
                 ENB0     <= 0;
                 ENA1     <= 1;
                 ENB1     <= 0;
-                fft_done <= 1;
+                
                 if (fft_done == 0)begin
                     ADDRA0 <= ADDRA0 + 1;
                     ADDRA1 <= ADDRA1 + 1;
+                    fft_done <= 1;
                 end
                 else if (~select_bramid)begin
                     ADDRA0       <= ADDRA0+1;//in_a
@@ -289,6 +290,12 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
     always@(posedge clk)
     begin
         out_fft_data_flag <= fft_done;
+        if (~select_bramid)begin
+            out_fft_data <= DOA0;
+        end
+        else begin
+            out_fft_data <= DOA1;
+        end
     end
     
     //*******************************************************
