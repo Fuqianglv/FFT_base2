@@ -220,30 +220,33 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
                 end
             end
             FFT_RESULT_OUT:begin
-                WEA0     <= 0;
-                WEB0     <= 0;
-                WEA1     <= 0;
-                WEB1     <= 0;
-                ENA0     <= 1;
-                ENB0     <= 0;
-                ENA1     <= 1;
-                ENB1     <= 0;
+                WEA0 <= 0;
+                WEB0 <= 0;
+                WEA1 <= 0;
+                WEB1 <= 0;
+                ENA0 <= 1;
+                ENB0 <= 0;
+                ENA1 <= 1;
+                ENB1 <= 0;
                 
                 if (fft_done == 0)begin
-                    ADDRA0 <= ADDRA0 + 1;
-                    ADDRA1 <= ADDRA1 + 1;
+                    ADDRA0   <= ADDRA0 + 1;
+                    ADDRA1   <= ADDRA1 + 1;
                     fft_done <= 1;
                 end
                 else if (~select_bramid)begin
-                    ADDRA0       <= ADDRA0+1;//in_a
-                    out_fft_data <= DOA0;
+                    ADDRA0[TF_ADDR_WIDTH:0] <= ADDRA0+1;//in_a
+                    out_fft_data            <= DOA0;
                 end
                 else begin
-                    ADDRA1       <= ADDRA1+1;//out_a
-                    out_fft_data <= DOA1;
+                    ADDRA1[TF_ADDR_WIDTH:0] <= ADDRA1+1;//out_a
+                    out_fft_data            <= DOA1;
                 end
-                if (ADDRA0 == N-1 || ADDRA1 == N-1)begin
-                    fft_done <= 0;
+                if (ADDRA0 == N/2-1 || ADDRA1 == N/2-1)begin
+                    fft_done <= ~fft_done;
+                end
+                else begin
+                    fft_done <= fft_done;
                 end
                 
             end
@@ -301,7 +304,7 @@ module FFT_Base2#(parameter CLK_FREQ = 100_000_000,
     //*******************************************************
     //twiddlefactors module
     //*******************************************************
-    twiddlefactors_8 u_twiddlefactors(
+    twiddlefactors_128 u_twiddlefactors(
     .clk    (clk),
     .addr   (tf_addr),
     .tf_out (tf_out)

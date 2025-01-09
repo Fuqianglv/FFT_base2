@@ -29,6 +29,16 @@ module FFT_Base2_tb();
     
     always #5 clk = ~clk;
     
+    reg [31:0] counter = 0;
+    
+    always @(posedge clk) begin
+        if (out_fft_data_flag)
+            counter <= counter + 1;
+        
+        else
+        counter <= 0;
+    end
+    
     wire [DATA_WIDTH-1:0] out_re;
     wire [DATA_WIDTH-1:0] out_im;
     assign out_re = out_fft_data[2*DATA_WIDTH-1:DATA_WIDTH];
@@ -37,7 +47,7 @@ module FFT_Base2_tb();
     FFT_Base2#(
     .CLK_FREQ(100_000_000),
     .RATE(4),
-    .N(8),
+    .N(128),
     .DATA_WIDTH(8)
     )u_FFT_Base2(
     .clk               (clk),
